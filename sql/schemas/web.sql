@@ -1,0 +1,1 @@
+create schema [web] authorization [dbo];
