@@ -1,0 +1,16 @@
+{
+  "name": "Basic Redis Leaderboard Demo .Net Core 5",
+  "repository": "https://github.com/redis-developer/basic-redis-leaderboard-demo-dotnet",
+  "stack": "container",
+  "addons": ["rediscloud:30"],
+  "env": {
+    "REDIS_ENDPOINT_URL": {
+      "description": "Redis server host:port, ex: 127.0.0.1:6379",
+      "required": true
+    },
+    "REDIS_PASSWORD": {
+      "description": "Redis server password",
+      "required": true
+    }
+  }
+}
