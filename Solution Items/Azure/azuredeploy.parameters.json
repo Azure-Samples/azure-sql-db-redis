@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vulnerabilityAssessments_Default_storageContainerPath": {
+            "value": null
+        },
+        "servers_sql_name": {
+            "value": null
+        },
+        "sites_func_sql_processing_name": {
+            "value": null
+        },
+        "storageAccount_name": {
+            "value": null
+        },
+        "serverfarms_ASP_name": {
+            "value": null
+        },
+        "components_func_sql_processing_name": {
+            "value": null
+        },
+        "redisEnterprise_redis_roberto_ms_east_name": {
+            "value": null
+        },
+        "redisEnterprise_redis_roberto_ms_west_name": {
+            "value": null
+        },
+        "actionGroups_Application_Insights_Smart_Detection_name": {
+            "value": null
+        },
+        "smartdetectoralertrules_failure_anomalies___func_sql_processing_name": {
+            "value": null
+        },
+        "workspaces_defaultworkspace_ef03f41d_d2bd_4691_b3a0_3aff1c6711f7_eus_externalid": {
+            "value": null
+        },
+        "azure_region_1": {
+            "value": null
+        },
+        "azure_region_2": {
+            "value": null
+        },
+        "sql_admin_name":{
+            "value": null
+        }
+    }
+}
