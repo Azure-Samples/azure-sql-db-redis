@@ -4,15 +4,6 @@
 # Azure Functions localsettings file
 local.settings.json
 
-# Azurite Files
-__azurite_db_blob_extent__.json
-__azurite_db_blob__.json
-__azurite_db_queue__.json
-__azurite_db_table__.json
-__azurite_db_queue_extent__.json
-__blobstorage__
-__queuestorage__
-
 # User-specific files
 *.suo
 *.user
@@ -271,3 +262,5 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
+.DS_Store

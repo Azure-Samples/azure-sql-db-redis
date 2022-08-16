@@ -630,26 +630,29 @@ namespace BasicRedisLeaderboardDemoDotNetCore.BLL.DbContexts
             if(options.Value.DeleteAllKeysOnLoad)
             await DeleteAllKeys(redisConnection, redisDatabase);
 
-            for (var i = 0;i< ranks.Count; i++)
+            if (options.Value.LoadInitialData)
             {
-                var rank = ranks[i];
-
-                try
+                for (var i = 0; i < ranks.Count; i++)
                 {
-                    // TODO: Optional use search to index and get sorted results
-                    var key = $"company:{rank.Symbol.ToLower()}";
+                    var rank = ranks[i];
 
-                    await redisDatabase.SortedSetAddAsync(LeaderboardDemoOptions.RedisKey, key, rank.MarketCap);
-
-                    await redisDatabase.HashSetAsync(key, new HashEntry[]
+                    try
                     {
+                        // TODO: Optional use search to index and get sorted results
+                        var key = $"company:{rank.Symbol.ToLower()}";
+
+                        await redisDatabase.SortedSetAddAsync(LeaderboardDemoOptions.RedisKey, key, rank.MarketCap);
+
+                        await redisDatabase.HashSetAsync(key, new HashEntry[]
+                        {
                       new HashEntry(nameof(rank.Company).ToLower(), rank.Company),
                       new HashEntry(nameof(rank.Country).ToLower(), rank.Country)
-                    });                            
-                }
-                catch(Exception ex)
-                {
+                        });
+                    }
+                    catch (Exception ex)
+                    {
 
+                    }
                 }
             }
         }

@@ -7,7 +7,7 @@ CREATE TABLE [dbo].[company](
 	[company] [nvarchar](100) NULL,
 	[country] [nvarchar](50) NULL,
 	[rank] [int] NULL,
-	[marketcap] [bigint] NULL
+	[marketcap] [float] NULL
 ) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON

@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Images", "Images", "{D2F5D0
 		Solution Items\Images\YTThumbnail.png = Solution Items\Images\YTThumbnail.png
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReaderFunction", "ReaderFunction\ReaderFunction.csproj", "{DB9A9808-C21A-48D4-8EC7-9BC47A7BA9C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,10 @@ Global
 		{2766027B-BC84-4F58-9C6A-1C8DC32D9D05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2766027B-BC84-4F58-9C6A-1C8DC32D9D05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2766027B-BC84-4F58-9C6A-1C8DC32D9D05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB9A9808-C21A-48D4-8EC7-9BC47A7BA9C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB9A9808-C21A-48D4-8EC7-9BC47A7BA9C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB9A9808-C21A-48D4-8EC7-9BC47A7BA9C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB9A9808-C21A-48D4-8EC7-9BC47A7BA9C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
