@@ -16,13 +16,13 @@ namespace ReaderFunction
 
         public static Task Main()
         {
-            var builder = new HostBuilder()            
-                         .ConfigureFunctionsWorkerDefaults()                         
+            var builder = new HostBuilder()                                                       
                          .ConfigureAppConfiguration(config =>
-                         {               
-                             config.AddJsonFile(_jsonFileName, optional:false, reloadOnChange: true)
+                         {                                           
+                             config.AddJsonFile(_jsonFileName, optional:true, reloadOnChange: true)
                              .AddEnvironmentVariables();   
                          })
+                         .ConfigureFunctionsWorkerDefaults()     
                          .ConfigureServices((context, services) =>
                          {
                              var settings = context.Configuration.GetSection(ReaderFunctionOptions.Section)

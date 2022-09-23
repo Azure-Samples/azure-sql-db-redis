@@ -110,7 +110,6 @@ namespace BasicRedisLeaderboardDemoDotNetCore
 
             app.UseRouting();
             app.UseCors(_policyName);
-            app.UseAuthorization();
 
             app.Map(new PathString(""), client =>
             {

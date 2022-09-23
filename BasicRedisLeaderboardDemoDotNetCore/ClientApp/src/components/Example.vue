@@ -142,9 +142,6 @@ const TRILLION = 1000 * 1000 * 1000 * 1000;
 const BILLION = 1000 * 1000 * 1000;
 const MILLION = 1000 * 1000;
 
-const API_BASE = location.hostname === 'localhost'
-  ? 'https://localhost:5001/api'
-  : location.origin + '/api'
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
 import RankSelectionModal from './RankSelectionModal'
 export default {
@@ -209,7 +206,7 @@ export default {
           amount: this.rankForm.op === 'add' ? this.rankForm.amount : -1 * this.rankForm.amount,
         }
 
-        await axios.get(`${API_BASE}/rank/update`, { params: form })
+        await axios.get(`/api/rank/update`, { params: form })
 
         this.rankForm = {
           symbol: '',
@@ -232,7 +229,7 @@ export default {
           this.startPaginate += 10
         }
 
-        const apiResp = await axios.get(`${API_BASE}/list/${method}`)
+        const apiResp = await axios.get(`/api/list/${method}`)
         this.companies = apiResp.data
       } catch (err) {
         console.log(err)

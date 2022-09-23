@@ -14,8 +14,6 @@
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "REDIS_ENDPOINT_URL": "redis-roberto-ms-west.westus2.redisenterprise.cache.azure.net:10000",
-        "REDIS_PASSWORD": "w+hVsMugdhJY3V6d6d9oepyz+Hg1m5j49oEZNJ9CBg8=",
         "IS_AZURE_REDIS": "true"
       }
     },
