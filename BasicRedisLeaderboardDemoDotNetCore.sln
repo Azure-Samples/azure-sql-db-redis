@@ -14,10 +14,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{70449E39-E7F9-4D8A-A058-A1742D584C7C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure", "Azure", "{0A390BA8-AF0B-40B9-8726-8C33CADD1128}"
-	ProjectSection(SolutionItems) = preProject
-		Solution Items\Azure\azuredeploy.json = Solution Items\Azure\azuredeploy.json
-		Solution Items\Azure\azuredeploy.parameters.json = Solution Items\Azure\azuredeploy.parameters.json
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{46CD3BD7-BD83-4D4E-9324-3BF41B4BEAA6}"
 	ProjectSection(SolutionItems) = preProject
