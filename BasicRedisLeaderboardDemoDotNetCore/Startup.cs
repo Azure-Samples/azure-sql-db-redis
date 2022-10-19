@@ -152,7 +152,7 @@ namespace BasicRedisLeaderboardDemoDotNetCore
                         Console.WriteLine($"received {message} on {channel}");
                         var db = connectionMultiplexer.GetDatabase();
                         var keyArr = channel.ToString().Split(":");
-                        var key = "";
+                        var key = keyArr[1];
 
                         if (keyArr.Length == 3)
                         {

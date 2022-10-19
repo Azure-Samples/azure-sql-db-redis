@@ -34,7 +34,13 @@ namespace SQLSweeperFunction
             //We can also add a new property in the hash to store the key name to avoid this logic.
 
             string pkValue = key.ToString().Split("-").Skip(2).ToArray()[0].ToString();
-           
+            
+            //Check if the pkValue has Redis Standard convention. If it does we need to normalize to SQL pk
+             if(pkValue.Contains(":"))
+             {
+                pkValue = pkValue.Split(":").Skip(1).ToArray()[0].ToString();
+             }
+
             _addQuery = GetUpdateQuery(_tableName, entries, _pk, pkValue);
             _deleteQuery = $"DELETE FROM {_tableName} WHERE {nameof(_pk)}={_pk}";
                     

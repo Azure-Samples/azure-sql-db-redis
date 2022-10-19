@@ -6,7 +6,6 @@ namespace ReaderFunction
         public const string Section = "ReaderFunctionSettings";
         public const string RedisKey = "REDIS_LEADERBOARD";
         public string SQLConnectionString { get; set; }
-        public string RedisConnectionString { get; set; }
         public string RedisHost { get; set; }
         public string RedisPort { get; set; }
         public string RedisPassword { get; set; }
