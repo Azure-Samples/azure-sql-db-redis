@@ -1,0 +1,1535 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.10.61.36676",
+      "templateHash": "2964200106376997780"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[deployment().location]",
+      "metadata": {
+        "description": "Optional. Azure main location to which the resources are to be deployed -defaults to the location of the current deployment"
+      }
+    },
+    "location2": {
+      "type": "string",
+      "metadata": {
+        "description": "Optional. Azure second location to which the resources are to be deployed -defaults to west"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Optional. The tags to be assigned to the created resources."
+      }
+    }
+  },
+  "variables": {
+    "applicationName": "leaderboard",
+    "defaultTags": "[union(createObject('application', variables('applicationName')), parameters('tags'))]",
+    "appResourceGroupName": "[format('rg-{0}', variables('applicationName'))]",
+    "sharedResourceGroupName": "[format('rg-shared-{0}', variables('applicationName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2021-04-01",
+      "name": "[variables('appResourceGroupName')]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('defaultTags')]"
+    },
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2021-04-01",
+      "name": "[variables('sharedResourceGroupName')]",
+      "location": "[parameters('location')]",
+      "tags": "[variables('defaultTags')]"
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "sharedresources-Deployment",
+      "resourceGroup": "[variables('sharedResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "applicationName": {
+            "value": "[variables('applicationName')]"
+          },
+          "tags": {
+            "value": "[variables('defaultTags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.10.61.36676",
+              "templateHash": "6795690938716509189"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Azure location to which the resources are to be deployed"
+              }
+            },
+            "applicationName": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Application name"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. The tags to be assigned to the created resources."
+              }
+            }
+          },
+          "variables": {
+            "resourceNames": {
+              "keyVault": "[format('kv-{0}', parameters('applicationName'))]",
+              "applicationInsights": "[format('appi-{0}', parameters('applicationName'))]",
+              "logAnalyticsWorkspace": "[format('log-{0}', parameters('applicationName'))]",
+              "storageAccount": "[format('st{0}', parameters('applicationName'))]"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.KeyVault/vaults",
+              "apiVersion": "2019-09-01",
+              "name": "[variables('resourceNames').keyVault]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "tenantId": "[subscription().tenantId]",
+                "sku": {
+                  "family": "A",
+                  "name": "standard"
+                },
+                "enabledForTemplateDeployment": true
+              }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2022-05-01",
+              "name": "[variables('resourceNames').storageAccount]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard_LRS"
+              },
+              "kind": "Storage",
+              "properties": {
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": true,
+                "networkAcls": {
+                  "bypass": "AzureServices",
+                  "virtualNetworkRules": [],
+                  "ipRules": [],
+                  "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                  "services": {
+                    "file": {
+                      "keyType": "Account",
+                      "enabled": true
+                    },
+                    "blob": {
+                      "keyType": "Account",
+                      "enabled": true
+                    }
+                  },
+                  "keySource": "Microsoft.Storage"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2020-10-01",
+              "name": "appInsights-Deployment",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "name": {
+                    "value": "[variables('resourceNames').applicationInsights]"
+                  },
+                  "logAnalyticsWorkspaceName": {
+                    "value": "[variables('resourceNames').logAnalyticsWorkspace]"
+                  },
+                  "tags": {
+                    "value": "[parameters('tags')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.10.61.36676",
+                      "templateHash": "17598286638537204475"
+                    }
+                  },
+                  "parameters": {
+                    "location": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Azure location to which the resources are to be deployed"
+                      }
+                    },
+                    "name": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. Application Insights instance resource name."
+                      }
+                    },
+                    "logAnalyticsWorkspaceName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Required. Log Analytics workspace instance resource name."
+                      }
+                    },
+                    "tags": {
+                      "type": "object",
+                      "defaultValue": {},
+                      "metadata": {
+                        "description": "Optional. The tags to be assigned to the created resources."
+                      }
+                    }
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.OperationalInsights/workspaces",
+                      "apiVersion": "2021-06-01",
+                      "name": "[parameters('logAnalyticsWorkspaceName')]",
+                      "location": "[parameters('location')]",
+                      "properties": {
+                        "retentionInDays": 30,
+                        "features": {
+                          "searchVersion": 1
+                        },
+                        "sku": {
+                          "name": "PerGB2018"
+                        }
+                      },
+                      "tags": "[parameters('tags')]"
+                    },
+                    {
+                      "type": "Microsoft.Insights/components",
+                      "apiVersion": "2020-02-02",
+                      "name": "[parameters('name')]",
+                      "location": "[parameters('location')]",
+                      "kind": "web",
+                      "properties": {
+                        "Application_Type": "web",
+                        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+                      },
+                      "tags": "[parameters('tags')]",
+                      "dependsOn": [
+                        "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsWorkspaceName'))]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "appInsightsConnectionString": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('name'))).ConnectionString]"
+                    },
+                    "appInsightsInstrumentationKey": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', parameters('name'))).InstrumentationKey]"
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "appInsightsConnectionString": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'appInsights-Deployment')).outputs.appInsightsConnectionString.value]"
+            },
+            "appInsightsInstrumentationKey": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'appInsights-Deployment')).outputs.appInsightsInstrumentationKey.value]"
+            },
+            "keyVaultName": {
+              "type": "string",
+              "value": "[variables('resourceNames').keyVault]"
+            },
+            "storageAccountName": {
+              "type": "string",
+              "value": "[variables('resourceNames').storageAccount]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('sharedResourceGroupName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "appService-Deployment",
+      "resourceGroup": "[variables('appResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "location2": {
+            "value": "[parameters('location2')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          },
+          "applicationName": {
+            "value": "[variables('applicationName')]"
+          },
+          "instrumentationKey": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('sharedResourceGroupName')), 'Microsoft.Resources/deployments', 'sharedresources-Deployment')).outputs.appInsightsInstrumentationKey.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.10.61.36676",
+              "templateHash": "10273164111597220707"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Azure location to which the resources are to be deployed"
+              }
+            },
+            "location2": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Azure secondary location to which the resources are to be deployed"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. The tags to be assigned to the created resources."
+              }
+            },
+            "applicationName": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Application name"
+              }
+            },
+            "instrumentationKey": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optiona. App Insights Instrumentation Key"
+              }
+            }
+          },
+          "variables": {
+            "resourceNames": {
+              "appServicePlanName": "[format('asp-{0}-{1}-001', parameters('applicationName'), parameters('location'))]",
+              "appServicePlan2Name": "[format('asp-{0}-{1}-001', parameters('applicationName'), parameters('location2'))]",
+              "appName": "[format('aps-{0}-{1}', parameters('applicationName'), parameters('location'))]",
+              "app2Name": "[format('aps-{0}-{1}', parameters('applicationName'), parameters('location2'))]"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('resourceNames').appServicePlanName]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "B1",
+                "tier": "Basic",
+                "size": "B1",
+                "family": "B",
+                "capacity": 1
+              },
+              "kind": "linux",
+              "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+              }
+            },
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('resourceNames').appServicePlan2Name]",
+              "location": "[parameters('location2')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "B1",
+                "tier": "Basic",
+                "size": "B1",
+                "family": "B",
+                "capacity": 1
+              },
+              "kind": "linux",
+              "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+              }
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('resourceNames').appName]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "app,linux",
+              "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                  {
+                    "name": "[format('{0}.azurewebsites.net', variables('resourceNames').appName)]",
+                    "sslState": "Disabled",
+                    "hostType": "Standard"
+                  },
+                  {
+                    "name": "[format('{0}.scm.azurewebsites.net', variables('resourceNames').appName)]",
+                    "sslState": "Disabled",
+                    "hostType": "Repository"
+                  }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('resourceNames').appServicePlanName)]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "vnetRouteAllEnabled": false,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                  "numberOfWorkers": 1,
+                  "linuxFxVersion": "DOTNETCORE|6.0",
+                  "acrUseManagedIdentityCreds": false,
+                  "alwaysOn": false,
+                  "http20Enabled": false,
+                  "functionAppScaleLimit": 0,
+                  "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "customDomainVerificationId": "863D812A4F8321ABD7EE56AC999CCEA38C9856F34D6BB6D836065FB757627DF1",
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": true,
+                "redundancyMode": "None",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('resourceNames').appServicePlanName)]"
+              ]
+            },
+            {
+              "condition": "[not(empty(parameters('instrumentationKey')))]",
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2022-03-01",
+              "name": "[format('{0}/{1}', variables('resourceNames').appName, 'web')]",
+              "properties": {
+                "appSettings": [
+                  {
+                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                    "value": "[parameters('instrumentationKey')]"
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('resourceNames').appName)]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('resourceNames').app2Name]",
+              "location": "[parameters('location2')]",
+              "tags": "[parameters('tags')]",
+              "kind": "app,linux",
+              "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                  {
+                    "name": "[format('{0}.azurewebsites.net', variables('resourceNames').app2Name)]",
+                    "sslState": "Disabled",
+                    "hostType": "Standard"
+                  },
+                  {
+                    "name": "[format('{0}.scm.azurewebsites.net', variables('resourceNames').app2Name)]",
+                    "sslState": "Disabled",
+                    "hostType": "Repository"
+                  }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('resourceNames').appServicePlan2Name)]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "vnetRouteAllEnabled": false,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                  "numberOfWorkers": 1,
+                  "linuxFxVersion": "DOTNETCORE|6.0",
+                  "acrUseManagedIdentityCreds": false,
+                  "alwaysOn": false,
+                  "http20Enabled": false,
+                  "functionAppScaleLimit": 0,
+                  "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": true,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "customDomainVerificationId": "863D812A4F8321ABD7EE56AC999CCEA38C9856F34D6BB6D836065FB757627DF1",
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": true,
+                "redundancyMode": "None",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('resourceNames').appServicePlan2Name)]"
+              ]
+            },
+            {
+              "condition": "[not(empty(parameters('instrumentationKey')))]",
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2022-03-01",
+              "name": "[format('{0}/{1}', variables('resourceNames').app2Name, 'web')]",
+              "properties": {
+                "appSettings": [
+                  {
+                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                    "value": "[parameters('instrumentationKey')]"
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('resourceNames').app2Name)]"
+              ]
+            }
+          ],
+          "outputs": {
+            "appHostName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Web/sites', variables('resourceNames').appName)).defaultHostName]"
+            },
+            "app2HostName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Web/sites', variables('resourceNames').app2Name)).defaultHostName]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('appResourceGroupName'))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('sharedResourceGroupName')), 'Microsoft.Resources/deployments', 'sharedresources-Deployment')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "sql-Deployment",
+      "resourceGroup": "[variables('appResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          },
+          "applicationName": {
+            "value": "[variables('applicationName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.10.61.36676",
+              "templateHash": "14455073321368632383"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Main location"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. The tags to be assigned to the created resources."
+              }
+            },
+            "adminUserName": {
+              "type": "string",
+              "defaultValue": "sql-admin",
+              "metadata": {
+                "description": "Optional. Administrator username"
+              }
+            },
+            "applicationName": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Application name"
+              }
+            }
+          },
+          "variables": {
+            "resourceNames": {
+              "sqlServerName": "[format('sql-{0}-{1}', parameters('applicationName'), parameters('location'))]",
+              "sqlServerDbName": "[format('sqldb-{0}-{1}', parameters('applicationName'), parameters('location'))]"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Sql/servers",
+              "apiVersion": "2022-02-01-preview",
+              "name": "[variables('resourceNames').sqlServerName]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "properties": {
+                "administratorLogin": "[parameters('adminUserName')]",
+                "version": "12.0",
+                "minimalTlsVersion": "1.2",
+                "publicNetworkAccess": "Enabled",
+                "restrictOutboundNetworkAccess": "Disabled"
+              }
+            },
+            {
+              "type": "Microsoft.Sql/servers/databases",
+              "apiVersion": "2022-02-01-preview",
+              "name": "[format('{0}/{1}', variables('resourceNames').sqlServerName, variables('resourceNames').sqlServerDbName)]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Standard",
+                "tier": "Standard",
+                "capacity": 10
+              },
+              "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": 268435456000,
+                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+                "zoneRedundant": false,
+                "readScale": "Disabled",
+                "requestedBackupStorageRedundancy": "Local",
+                "isLedgerOn": false
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('resourceNames').sqlServerName)]"
+              ]
+            }
+          ],
+          "outputs": {
+            "sqlServerName": {
+              "type": "string",
+              "value": "[variables('resourceNames').sqlServerName]"
+            },
+            "sqlServerDbName": {
+              "type": "string",
+              "value": "[variables('resourceNames').sqlServerDbName]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('appResourceGroupName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "redis-Deployment",
+      "resourceGroup": "[variables('appResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "location2": {
+            "value": "[parameters('location2')]"
+          },
+          "tags": {
+            "value": "[variables('defaultTags')]"
+          },
+          "keyVaultName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('sharedResourceGroupName')), 'Microsoft.Resources/deployments', 'sharedresources-Deployment')).outputs.keyVaultName.value]"
+          },
+          "applicationName": {
+            "value": "[variables('applicationName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.10.61.36676",
+              "templateHash": "10201027271530325762"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Azure location to which the resources are to be deployed"
+              }
+            },
+            "location2": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Azure secondary location to which the resources are to be deployed"
+              }
+            },
+            "skuName": {
+              "type": "string",
+              "defaultValue": "Enterprise_E10",
+              "allowedValues": [
+                "EnterpriseFlash_F1500",
+                "EnterpriseFlash_F300",
+                "EnterpriseFlash_F700",
+                "Enterprise_E10",
+                "Enterprise_E100",
+                "Enterprise_E20",
+                "Enterprise_E50"
+              ],
+              "metadata": {
+                "description": "Optional. The Azure Cache for Redis Enterprise sku."
+              }
+            },
+            "capacity": {
+              "type": "int",
+              "defaultValue": 2,
+              "allowedValues": [
+                2,
+                4,
+                6,
+                8
+              ],
+              "metadata": {
+                "description": "Optional. The Azure Cache for Redis Enterprise capacity."
+              }
+            },
+            "clusteringPolicy": {
+              "type": "string",
+              "defaultValue": "EnterpriseCluster",
+              "allowedValues": [
+                "EnterpriseCluster",
+                "OSSCluster"
+              ],
+              "metadata": {
+                "description": "Optional. The Azure Cache for Redis Enterprise clustering policy."
+              }
+            },
+            "evictionPolicy": {
+              "type": "string",
+              "defaultValue": "NoEviction",
+              "allowedValues": [
+                "AllKeysLFU",
+                "AllKeysLRU",
+                "AllKeysRandom",
+                "NoEviction",
+                "VolatileLFU",
+                "VolatileLRU",
+                "VolatileRandom",
+                "VolatileTTL"
+              ],
+              "metadata": {
+                "description": "Optional. The Azure Cache for Redis Enteprise eviction policy."
+              }
+            },
+            "persistenceOption": {
+              "type": "string",
+              "defaultValue": "Disabled",
+              "allowedValues": [
+                "Disabled",
+                "RDB",
+                "AOF"
+              ],
+              "metadata": {
+                "description": "Optional. Persist data stored in Azure Cache for Redis Enterprise."
+              }
+            },
+            "aofFrequency": {
+              "type": "string",
+              "defaultValue": "1s",
+              "allowedValues": [
+                "1s",
+                "always"
+              ],
+              "metadata": {
+                "description": "Optional. The frequency at which data is written to disk."
+              }
+            },
+            "rdbFrequency": {
+              "type": "string",
+              "defaultValue": "6h",
+              "allowedValues": [
+                "12h",
+                "1h",
+                "6h"
+              ],
+              "metadata": {
+                "description": "Optional. The frequency at which a snapshot of the database is created."
+              }
+            },
+            "modulesEnabled": {
+              "type": "array",
+              "defaultValue": [],
+              "allowedValues": [
+                "RedisBloom",
+                "RedisTimeSeries",
+                "RedisJSON",
+                "RediSearch"
+              ],
+              "metadata": {
+                "description": "Optional. The Azure Cache for Redis Enterprise module(s)"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. The tags to be assigned to the created resources."
+              }
+            },
+            "availabilityZoneOption": {
+              "type": "bool",
+              "defaultValue": true,
+              "metadata": {
+                "description": "Required. Enable zone redundancy."
+              }
+            },
+            "keyVaultName": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Key Vault Name"
+              }
+            },
+            "applicationName": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Application name"
+              }
+            }
+          },
+          "variables": {
+            "resourceNames": {
+              "redisLocation1Name": "[format('redis-{0}-{1}', parameters('applicationName'), parameters('location'))]",
+              "redisLocation2Name": "[format('redis-{0}-{1}', parameters('applicationName'), parameters('location2'))]",
+              "redisDbName": "default",
+              "redisGeoReplicationGroupName": "[format('gr-{0}', parameters('applicationName'))]"
+            },
+            "rdbPersistence": "[if(equals(parameters('persistenceOption'), 'RDB'), true(), false())]",
+            "aofPersistence": "[if(equals(parameters('persistenceOption'), 'AOF'), true(), false())]",
+            "enableZoneRedundancy": "[if(equals(parameters('availabilityZoneOption'), true()), createArray('1', '2', '3'), null())]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Cache/redisEnterprise",
+              "apiVersion": "2022-01-01",
+              "name": "[variables('resourceNames').redisLocation1Name]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('skuName')]",
+                "capacity": "[parameters('capacity')]"
+              },
+              "properties": {
+                "minimumTlsVersion": "1.2"
+              },
+              "zones": "[variables('enableZoneRedundancy')]",
+              "tags": "[parameters('tags')]"
+            },
+            {
+              "type": "Microsoft.Cache/redisEnterprise/databases",
+              "apiVersion": "2022-01-01",
+              "name": "[format('{0}/{1}', variables('resourceNames').redisLocation1Name, variables('resourceNames').redisDbName)]",
+              "properties": {
+                "copy": [
+                  {
+                    "name": "modules",
+                    "count": "[length(parameters('modulesEnabled'))]",
+                    "input": {
+                      "name": "[parameters('modulesEnabled')[copyIndex('modules')]]"
+                    }
+                  }
+                ],
+                "clientProtocol": "Encrypted",
+                "port": 10000,
+                "clusteringPolicy": "[parameters('clusteringPolicy')]",
+                "evictionPolicy": "[parameters('evictionPolicy')]",
+                "persistence": {
+                  "aofEnabled": "[variables('aofPersistence')]",
+                  "aofFrequency": "[if(variables('aofPersistence'), parameters('aofFrequency'), null())]",
+                  "rdbEnabled": "[variables('rdbPersistence')]",
+                  "rdbFrequency": "[if(variables('rdbPersistence'), parameters('rdbFrequency'), null())]"
+                },
+                "geoReplication": {
+                  "groupNickname": "[variables('resourceNames').redisGeoReplicationGroupName]",
+                  "linkedDatabases": [
+                    {
+                      "id": "[format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Cache/redisEnterprise/{2}/databases/default', subscription().subscriptionId, resourceGroup().name, variables('resourceNames').redisLocation1Name)]"
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cache/redisEnterprise', variables('resourceNames').redisLocation1Name)]"
+              ]
+            },
+            {
+              "type": "Microsoft.Cache/redisEnterprise",
+              "apiVersion": "2022-01-01",
+              "name": "[variables('resourceNames').redisLocation2Name]",
+              "location": "[parameters('location2')]",
+              "sku": {
+                "name": "[parameters('skuName')]",
+                "capacity": "[parameters('capacity')]"
+              },
+              "properties": {
+                "minimumTlsVersion": "1.2"
+              },
+              "zones": "[variables('enableZoneRedundancy')]",
+              "tags": "[parameters('tags')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Cache/redisEnterprise', variables('resourceNames').redisLocation1Name)]"
+              ]
+            },
+            {
+              "type": "Microsoft.Cache/redisEnterprise/databases",
+              "apiVersion": "2022-01-01",
+              "name": "[format('{0}/{1}', variables('resourceNames').redisLocation2Name, variables('resourceNames').redisDbName)]",
+              "properties": {
+                "copy": [
+                  {
+                    "name": "modules",
+                    "count": "[length(parameters('modulesEnabled'))]",
+                    "input": {
+                      "name": "[parameters('modulesEnabled')[copyIndex('modules')]]"
+                    }
+                  }
+                ],
+                "clientProtocol": "Encrypted",
+                "port": 10000,
+                "clusteringPolicy": "[parameters('clusteringPolicy')]",
+                "evictionPolicy": "[parameters('evictionPolicy')]",
+                "persistence": {
+                  "aofEnabled": "[variables('aofPersistence')]",
+                  "aofFrequency": "[if(variables('aofPersistence'), parameters('aofFrequency'), null())]",
+                  "rdbEnabled": "[variables('rdbPersistence')]",
+                  "rdbFrequency": "[if(variables('rdbPersistence'), parameters('rdbFrequency'), null())]"
+                },
+                "geoReplication": {
+                  "groupNickname": "[variables('resourceNames').redisGeoReplicationGroupName]",
+                  "linkedDatabases": [
+                    {
+                      "id": "[format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Cache/redisEnterprise/{2}/databases/default', subscription().subscriptionId, resourceGroup().name, variables('resourceNames').redisLocation1Name)]"
+                    },
+                    {
+                      "id": "[format('/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.Cache/redisEnterprise/{2}/databases/default', subscription().subscriptionId, resourceGroup().name, variables('resourceNames').redisLocation2Name)]"
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cache/redisEnterprise', variables('resourceNames').redisLocation2Name)]"
+              ]
+            },
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2019-09-01",
+              "name": "[format('{0}/redisHostName', parameters('keyVaultName'))]",
+              "properties": {
+                "value": "[reference(resourceId('Microsoft.Cache/redisEnterprise', variables('resourceNames').redisLocation1Name)).hostName]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cache/redisEnterprise', variables('resourceNames').redisLocation1Name)]"
+              ]
+            },
+            {
+              "type": "Microsoft.KeyVault/vaults/secrets",
+              "apiVersion": "2019-09-01",
+              "name": "[format('{0}/redisPassword', parameters('keyVaultName'))]",
+              "properties": {
+                "value": "[format('{0}', listKeys(resourceId('Microsoft.Cache/redisEnterprise', variables('resourceNames').redisLocation1Name), '2022-01-01').keys[0].value)]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cache/redisEnterprise', variables('resourceNames').redisLocation1Name)]"
+              ]
+            }
+          ],
+          "outputs": {
+            "redisLocation1Name": {
+              "type": "string",
+              "value": "[variables('resourceNames').redisLocation1Name]"
+            },
+            "redisLocation1Id": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Cache/redisEnterprise', variables('resourceNames').redisLocation1Name)]"
+            },
+            "redisLocation1HostName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Cache/redisEnterprise', variables('resourceNames').redisLocation1Name)).hostName]"
+            },
+            "redisLocation2Name": {
+              "type": "string",
+              "value": "[variables('resourceNames').redisLocation2Name]"
+            },
+            "redisLocation2Id": {
+              "type": "string",
+              "value": "[variables('resourceNames').redisLocation2Name]"
+            },
+            "redisLocation2HostName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Cache/redisEnterprise', variables('resourceNames').redisLocation2Name)).hostName]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('appResourceGroupName'))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('appResourceGroupName')), 'Microsoft.Resources/deployments', 'appService-Deployment')]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('sharedResourceGroupName')), 'Microsoft.Resources/deployments', 'sharedresources-Deployment')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "functionApps-Deployment",
+      "resourceGroup": "[variables('appResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          },
+          "applicationName": {
+            "value": "[variables('applicationName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.10.61.36676",
+              "templateHash": "10554258402626359785"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Main location"
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. The tags to be assigned to the created resources."
+              }
+            },
+            "applicationName": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Application name"
+              }
+            }
+          },
+          "variables": {
+            "resourceNames": {
+              "appServicePlanName": "[format('asp-{0}-{1}-002', parameters('applicationName'), parameters('location'))]",
+              "appServicePlan2Name": "[format('asp-{0}-{1}-003', parameters('applicationName'), parameters('location'))]",
+              "funcSqlProcessingName": "func-sql-processing",
+              "funcSqlReaderName": "func-sql-reader"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('resourceNames').appServicePlanName]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+              },
+              "kind": "functionapp",
+              "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 0,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+              }
+            },
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('resourceNames').appServicePlan2Name]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+              },
+              "kind": "functionapp",
+              "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 0,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+              }
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('resourceNames').funcSqlProcessingName]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "functionapp,linux",
+              "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                  {
+                    "name": "[format('{0}.azurewebsites.net', variables('resourceNames').funcSqlProcessingName)]",
+                    "sslState": "Disabled",
+                    "hostType": "Standard"
+                  },
+                  {
+                    "name": "[format('{0}.scm.azurewebsites.net', variables('resourceNames').funcSqlProcessingName)]",
+                    "sslState": "Disabled",
+                    "hostType": "Repository"
+                  }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('resourceNames').appServicePlanName)]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "vnetRouteAllEnabled": false,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                  "numberOfWorkers": 1,
+                  "linuxFxVersion": "DOTNET|6.0",
+                  "acrUseManagedIdentityCreds": false,
+                  "alwaysOn": false,
+                  "http20Enabled": false,
+                  "functionAppScaleLimit": 200,
+                  "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "customDomainVerificationId": "863D812A4F8321ABD7EE56AC999CCEA38C9856F34D6BB6D836065FB757627DF1",
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('resourceNames').appServicePlanName)]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('resourceNames').funcSqlReaderName]",
+              "location": "[parameters('location')]",
+              "tags": "[parameters('tags')]",
+              "kind": "functionapp,linux",
+              "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                  {
+                    "name": "[format('{0}.azurewebsites.net', variables('resourceNames').funcSqlReaderName)]",
+                    "sslState": "Disabled",
+                    "hostType": "Standard"
+                  },
+                  {
+                    "name": "[format('{0}.scm.azurewebsites.net', variables('resourceNames').funcSqlReaderName)]",
+                    "sslState": "Disabled",
+                    "hostType": "Repository"
+                  }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('resourceNames').appServicePlan2Name)]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "vnetRouteAllEnabled": false,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                  "numberOfWorkers": 1,
+                  "linuxFxVersion": "DOTNET|6.0",
+                  "acrUseManagedIdentityCreds": false,
+                  "alwaysOn": false,
+                  "http20Enabled": false,
+                  "functionAppScaleLimit": 200,
+                  "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "customDomainVerificationId": "863D812A4F8321ABD7EE56AC999CCEA38C9856F34D6BB6D836065FB757627DF1",
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": true,
+                "redundancyMode": "None",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('resourceNames').appServicePlan2Name)]"
+              ]
+            }
+          ],
+          "outputs": {
+            "funcSqlReaderName": {
+              "type": "string",
+              "value": "[variables('resourceNames').funcSqlReaderName]"
+            },
+            "funcSqlProcessingName": {
+              "type": "string",
+              "value": "[variables('resourceNames').funcSqlProcessingName]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('appResourceGroupName'))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('appResourceGroupName')), 'Microsoft.Resources/deployments', 'redis-Deployment')]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('appResourceGroupName')), 'Microsoft.Resources/deployments', 'sql-Deployment')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "frontDoor-Deployment",
+      "resourceGroup": "[variables('appResourceGroupName')]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "application1Location": {
+            "value": "[parameters('location')]"
+          },
+          "application2Location": {
+            "value": "[parameters('location2')]"
+          },
+          "appHostName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('appResourceGroupName')), 'Microsoft.Resources/deployments', 'appService-Deployment')).outputs.appHostName.value]"
+          },
+          "app2HostName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('appResourceGroupName')), 'Microsoft.Resources/deployments', 'appService-Deployment')).outputs.app2HostName.value]"
+          },
+          "applicationName": {
+            "value": "[variables('applicationName')]"
+          },
+          "tags": {
+            "value": "[parameters('tags')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.10.61.36676",
+              "templateHash": "11701335896305254845"
+            }
+          },
+          "parameters": {
+            "frontDoorEndpointName": {
+              "type": "string",
+              "defaultValue": "[format('afd-{0}', uniqueString(resourceGroup().id))]",
+              "metadata": {
+                "description": "The name of the Front Door endpoint to create. This must be globally unique."
+              }
+            },
+            "tags": {
+              "type": "object",
+              "defaultValue": {},
+              "metadata": {
+                "description": "Optional. The tags to be assigned to the created resources."
+              }
+            },
+            "applicationName": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Application name"
+              }
+            },
+            "application1Location": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. App 1 location"
+              }
+            },
+            "application2Location": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Application 2 location"
+              }
+            },
+            "appHostName": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Application host name for location 1"
+              }
+            },
+            "app2HostName": {
+              "type": "string",
+              "metadata": {
+                "description": "Required. Application host name for location 2"
+              }
+            }
+          },
+          "variables": {
+            "resourceNames": {
+              "frontDoorName": "[format('fd-{0}', parameters('applicationName'))]",
+              "frontDoorOriginGroupName": "default-origin-group",
+              "frontDoorOriginName": "[format('{0}-{1}', parameters('applicationName'), parameters('application1Location'))]",
+              "frontDoorOrigin2Name": "[format('{0}-{1}', parameters('applicationName'), parameters('application2Location'))]",
+              "frontDoorRouteName": "default-route"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Cdn/profiles",
+              "apiVersion": "2021-06-01",
+              "name": "[variables('resourceNames').frontDoorName]",
+              "location": "global",
+              "sku": {
+                "name": "Standard_AzureFrontDoor"
+              },
+              "tags": "[parameters('tags')]"
+            },
+            {
+              "type": "Microsoft.Cdn/profiles/afdEndpoints",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}', variables('resourceNames').frontDoorName, parameters('frontDoorEndpointName'))]",
+              "location": "global",
+              "properties": {
+                "enabledState": "Enabled"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles', variables('resourceNames').frontDoorName)]"
+              ]
+            },
+            {
+              "type": "Microsoft.Cdn/profiles/originGroups",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}', variables('resourceNames').frontDoorName, variables('resourceNames').frontDoorOriginGroupName)]",
+              "properties": {
+                "loadBalancingSettings": {
+                  "sampleSize": 4,
+                  "successfulSamplesRequired": 3
+                },
+                "sessionAffinityState": "Disabled",
+                "healthProbeSettings": {
+                  "probePath": "/",
+                  "probeRequestType": "HEAD",
+                  "probeProtocol": "Http",
+                  "probeIntervalInSeconds": 100
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles', variables('resourceNames').frontDoorName)]"
+              ]
+            },
+            {
+              "type": "Microsoft.Cdn/profiles/originGroups/origins",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}/{2}', variables('resourceNames').frontDoorName, variables('resourceNames').frontDoorOriginGroupName, variables('resourceNames').frontDoorOriginName)]",
+              "properties": {
+                "hostName": "[parameters('appHostName')]",
+                "httpPort": 80,
+                "httpsPort": 443,
+                "originHostHeader": "[parameters('appHostName')]",
+                "priority": 1,
+                "weight": 1000
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles/originGroups', variables('resourceNames').frontDoorName, variables('resourceNames').frontDoorOriginGroupName)]"
+              ]
+            },
+            {
+              "type": "Microsoft.Cdn/profiles/originGroups/origins",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}/{2}', variables('resourceNames').frontDoorName, variables('resourceNames').frontDoorOriginGroupName, variables('resourceNames').frontDoorOrigin2Name)]",
+              "properties": {
+                "hostName": "[parameters('app2HostName')]",
+                "httpPort": 80,
+                "httpsPort": 443,
+                "originHostHeader": "[parameters('app2HostName')]",
+                "priority": 1,
+                "weight": 1000
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles/originGroups', variables('resourceNames').frontDoorName, variables('resourceNames').frontDoorOriginGroupName)]"
+              ]
+            },
+            {
+              "type": "Microsoft.Cdn/profiles/afdEndpoints/routes",
+              "apiVersion": "2021-06-01",
+              "name": "[format('{0}/{1}/{2}', variables('resourceNames').frontDoorName, parameters('frontDoorEndpointName'), variables('resourceNames').frontDoorRouteName)]",
+              "properties": {
+                "originGroup": {
+                  "id": "[resourceId('Microsoft.Cdn/profiles/originGroups', variables('resourceNames').frontDoorName, variables('resourceNames').frontDoorOriginGroupName)]"
+                },
+                "supportedProtocols": [
+                  "Http",
+                  "Https"
+                ],
+                "patternsToMatch": [
+                  "/*"
+                ],
+                "forwardingProtocol": "HttpsOnly",
+                "linkToDefaultDomain": "Enabled",
+                "httpsRedirect": "Enabled"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Cdn/profiles/afdEndpoints', variables('resourceNames').frontDoorName, parameters('frontDoorEndpointName'))]",
+                "[resourceId('Microsoft.Cdn/profiles/originGroups/origins', variables('resourceNames').frontDoorName, variables('resourceNames').frontDoorOriginGroupName, variables('resourceNames').frontDoorOriginName)]",
+                "[resourceId('Microsoft.Cdn/profiles/originGroups', variables('resourceNames').frontDoorName, variables('resourceNames').frontDoorOriginGroupName)]"
+              ]
+            }
+          ],
+          "outputs": {
+            "frontDoorEndpointHostName": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Cdn/profiles/afdEndpoints', variables('resourceNames').frontDoorName, parameters('frontDoorEndpointName'))).hostName]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('appResourceGroupName'))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('appResourceGroupName')), 'Microsoft.Resources/deployments', 'appService-Deployment')]"
+      ]
+    }
+  ],
+  "outputs": {
+    "appResourceGroupName": {
+      "type": "string",
+      "value": "[variables('appResourceGroupName')]"
+    },
+    "sharedResourceGroupName": {
+      "type": "string",
+      "value": "[variables('sharedResourceGroupName')]"
+    }
+  }
+}
