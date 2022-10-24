@@ -2,10 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using SQLSweeperFunction.Models;
 using StackExchange.Redis;
 using System.Collections.Generic;
 
@@ -14,9 +12,9 @@ namespace SQLSweeperFunction
     public class SQLSweeperFunction 
     {
         [FunctionName("SQLSweeperFunction")]
-        public static async Task Run([TimerTrigger("%TimerInterval%")]TimerInfo myTimer, ILogger log)
+        public static async Task Run([TimerTrigger("%TimerInterval%")]TimerInfo myTimer,
+        ILogger log)
         {
-            //Get all the keys that need to be worked on
             var sqlConnectionString = GetAzureSqlConnectionString("SQLConnectionString", log);
             var redisConnectionString = GetRedisConnectionstring("RedisConnectionString", log);
 
@@ -65,13 +63,13 @@ namespace SQLSweeperFunction
         private static string GetAzureSqlConnectionString(string name, ILogger log)
         { 
             log.LogInformation($"Getting information from ConnectionStrings:{name}");
-            string conStr = System.Environment.GetEnvironmentVariable($"ConnectionStrings:{name}");
+            string conStr = Environment.GetEnvironmentVariable($"ConnectionStrings:{name}");
             log.LogInformation($"The conStr value is:{conStr}");
 
             if (string.IsNullOrEmpty(conStr) && name == "SQLConnectionString") // Azure Functions App Service naming convention
             {
                 log.LogInformation($"Getting information from SQLAZURECONNSTR_{name}");
-                conStr = System.Environment.GetEnvironmentVariable($"SQLAZURECONNSTR_{name}");
+                conStr = Environment.GetEnvironmentVariable($"SQLAZURECONNSTR_{name}");
                 log.LogInformation($"The conStr value is:{conStr}");
             }
             return conStr;
@@ -80,13 +78,13 @@ namespace SQLSweeperFunction
         private static string GetRedisConnectionstring(string name, ILogger log)
         {
             log.LogInformation($"Getting information from ConnectionStrings:{name}");
-            string conStr = System.Environment.GetEnvironmentVariable($"ConnectionStrings:{name}");
+            string conStr = Environment.GetEnvironmentVariable($"ConnectionStrings:{name}");
             log.LogInformation($"The conStr value is:{conStr}");
 
             if (string.IsNullOrEmpty(conStr) && name == "RedisConnectionString") // Azure Functions App Service naming convention
             {
                   log.LogInformation($"Getting information from REDISCONNSTR_{name}");
-                  conStr = System.Environment.GetEnvironmentVariable($"REDISCONNSTR_{name}");
+                  conStr = Environment.GetEnvironmentVariable($"REDISCONNSTR_{name}");
                   log.LogInformation($"The conStr value is:{conStr}");
             }
                 
