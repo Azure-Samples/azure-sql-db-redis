@@ -1,0 +1,12 @@
+﻿{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "ReaderFunctionSettings:RedisHost": "--SECRET--",
+    "ReaderFunctionSettings:RedisPort": "10000",
+    "ReaderFunctionSettings:RedisPassword": "--SECRET--",
+    "ReaderFunctionSettings:IsACRE": "true",
+    "ReaderFunctionSettings:SQLConnectionString": "--SECRET--"
+  }
+}
