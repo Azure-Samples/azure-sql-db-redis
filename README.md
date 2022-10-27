@@ -1,8 +1,8 @@
-# Basic Redis Leaderboard Demo .Net 6 with Write-Behind
+# Basic Leaderboard Demo created using Redis (ACRE) with .NET 6 and Write-Behind to Azure SQL with Azure Functions
 
 ## Summary
 
-We based this project from our [Basic Leaderboard](https://github.com/redis-developer/basic-redis-leaderboard-demo-dotnet) project to show how you can acess Azure Cache for Redis using .NET 6 and added a Write-Behind pattern to Azure SQL. At the moment, our preferred way to implement this pattern is to use RedisGears, but is not availble in ACRE at this time.
+We based this project from our [Basic Leaderboard](https://github.com/redis-developer/basic-redis-leaderboard-demo-dotnet) project to show how you can acess Azure Cache for Redis using .NET 6 and added a Write-Behind pattern to Azure SQL. This pattern can be implemented using RedisGears or Azure Functions, however RedisGears is not available in ACRE at this time.
 
 We decided to implement the Write-Behind pattern using an Azure Function that reads the key change sent through a Redis Stream. It is using a pulling mechanism but we are looking forward to implement it using an event-driven approach.
 
@@ -113,7 +113,7 @@ dotnet run
 ```
 
 7. Run Azure Function (Write Behind)
-    - You can try the Write BEhind pattern by setting "true" to the "UseWriteBehind" configuration variable inside the appsettings.json. If so, you need to run the Write Behind Function by:
+    - You can try the Write Behind pattern by setting "true" to the "UseWriteBehind" configuration variable inside the appsettings.json. If so, you need to run the Write Behind Function by:
 
     ```sh
     cd SQLSweeperFunction
