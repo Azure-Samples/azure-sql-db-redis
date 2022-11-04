@@ -1,4 +1,32 @@
-# Basic Leaderboard Demo created using Redis (ACRE) with .NET 6 and Write-Behind to Azure SQL with Azure Functions
+---
+page_type: sample
+languages:
+  - csharp
+  - tsql
+  - sql
+products:
+  - azure
+  - vs-code
+  - azure-sql-database
+  - azure-functions
+  - azure-web-apps
+  - azure-sql-database
+  - azure-cache-redis
+  - dotnet
+  - dotnet-core
+description: 'Leaderboard Demo with Redis (ACRE, Write-Behind), .NET 6, Azure SQL with Azure Functions'
+urlFragment: 'azure-sql-db-redis'
+---
+
+<!--
+Guidelines on README format: https://review.docs.microsoft.com/help/onboard/admin/samples/concepts/readme-template?branch=master
+
+Guidance on onboarding samples to docs.microsoft.com/samples: https://review.docs.microsoft.com/help/onboard/admin/samples/process/onboarding?branch=master
+
+Taxonomies for products and languages: https://review.docs.microsoft.com/new-hope/information-architecture/metadata/taxonomies?branch=master
+-->
+
+# Realtime Leaderboard Demo with Redis (ACRE, Write-Behind), .NET 6, Azure SQL with Azure Functions
 
 ## Summary
 
