@@ -37,27 +37,35 @@ namespace BasicRedisLeaderboardDemoDotNetCore
         public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
-        {        
-            
-            services.AddOptions<LeaderboardDemoOptions>().Bind(Configuration.GetSection(LeaderboardDemoOptions.Section));
+        {
+            services.AddOptions<LeaderboardDemoOptions>()
+            .Bind(Configuration.GetSection(LeaderboardDemoOptions.Section))
+            .Configure(options => {
+                options.RedisHost = Configuration["REDIS_HOST"];
+                options.RedisPort = Configuration["REDIS_PORT"];
+                options.RedisPassword = Configuration[Configuration["REDIS_ACCESS_KEY"]];
+                options.IsACRE = Convert.ToBoolean(Configuration["IS_ACRE"]);
+                options.AllowAdmin = Convert.ToBoolean(Configuration["ALLOW_ADMIN"]);
+                options.DeleteAllKeysOnLoad = Convert.ToBoolean(Configuration["DELETE_ALL_KEYS_ONLOAD"]);
+                options.UseReadThrough = Convert.ToBoolean(Configuration["USE_READ_THROUGH"]);
+                options.UseWriteBehind = Convert.ToBoolean(Configuration["USE_WRITE_BEHIND"]);
+                options.ReadThroughFunctionBaseUrl = Configuration["READ_THROUGH_FUNCTION_BASE_URL"];
+                options.LoadInitialData = Convert.ToBoolean(Configuration["LOAD_INITIAL_DATA"]);
+            });
 
-            var options = Configuration.GetSection(LeaderboardDemoOptions.Section)
-                           .Get<LeaderboardDemoOptions>();
+            var endpoint = GetRedisEndpoint(Configuration["REDIS_HOST"], 
+                Configuration["REDIS_PORT"], Configuration[Configuration["REDIS_ACCESS_KEY"]], 
+                Convert.ToBoolean(Configuration["IS_ACRE"]), Convert.ToBoolean(Configuration["ALLOW_ADMIN"]));
 
-            var sp = services.BuildServiceProvider();
-
-            //var options = sp.GetService<IOptions<LeaderboardDemoOptions>>();
-
-            var endpoint = options.GetRedisEnpoint();
             var redisConnection = ConnectionMultiplexer.Connect(endpoint);
 
             services.AddSingleton<IConnectionMultiplexer>(redisConnection);
-           
-            if(options.UseReadThrough)
+
+            if (Convert.ToBoolean(Configuration["USE_READ_THROUGH"]))
             {
                 services.AddHttpClient<IAzureFunctionHttpClient, AzureFunctionHttpClient>(httpClient =>
                 {
-                    httpClient.BaseAddress = new Uri(options.ReadThroughFunctionBaseUrl);
+                    httpClient.BaseAddress = new Uri(Configuration["READ_THROUGH_FUNCTION_BASE_URL"]);
                 });
                 services.AddTransient<IRankService, RankServiceReadThrough>();
             }
@@ -195,5 +203,29 @@ namespace BasicRedisLeaderboardDemoDotNetCore
                     }
                 });
         }
+
+        private string GetRedisEndpoint(string RedisHost, string RedisPort, string RedisPassword, bool IsACRE, bool AllowAdmin)
+        {
+            if (string.IsNullOrEmpty(RedisHost))
+            {
+                RedisHost = "127.0.0.1";
+                RedisPort = "6379";
+            }
+
+            if (IsACRE)
+            { 
+                return $"{RedisHost}:{RedisPort},abortConnect=false,ssl=true,password={RedisPassword},allowAdmin={AllowAdmin},syncTimeout=5000,connectTimeout=1000";                
+            }
+
+            if (RedisPassword != null)
+            {
+                return $"{RedisPassword}@{RedisHost}:{RedisPort}";               
+            }
+            else
+            {
+                return $"{RedisHost}:{RedisPort}";
+            }
+        }
+
     }
 }
