@@ -13,7 +13,6 @@ products:
   - azure-sql-database
   - azure-cache-redis
   - dotnet
-  - dotnet-core
 description: 'Leaderboard Demo with Redis (ACRE, Write-Behind), .NET 6, Azure SQL with Azure Functions'
 urlFragment: 'azure-sql-db-redis'
 ---
