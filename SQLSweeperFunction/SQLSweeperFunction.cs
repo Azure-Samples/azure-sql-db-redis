@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
 using System.Collections.Generic;
 
@@ -15,80 +18,59 @@ namespace SQLSweeperFunction
         public static async Task Run([TimerTrigger("%TimerInterval%")]TimerInfo myTimer,
         ILogger log)
         {
-            var sqlConnectionString = GetAzureSqlConnectionString("SQLConnectionString", log);
-            var redisConnectionString = GetRedisConnectionstring("RedisConnectionString", log);
-
-            if (string.IsNullOrEmpty(sqlConnectionString))
-            {
-                log.LogInformation("The SQL connection string is empty");
-                throw new NullReferenceException(nameof(sqlConnectionString));
-            }
-            
-            if(string.IsNullOrEmpty(redisConnectionString))
-            {
-                log.LogInformation("The Redis connection string is empty");
-                 throw new NullReferenceException(nameof(redisConnectionString));
-            }
-               
-            try
-            {
-                IConnectionMultiplexer redisConnection = ConnectionMultiplexer.Connect(redisConnectionString);
-
-                IDatabase db = redisConnection.GetDatabase();
-
-                var sqlConnector = new SqlConnector(new SqlConnection(sqlConnectionString), "company", "symbol", log, db);
-
-                //TODO: Read from stream, depending on the type insert or update
-                var preFix = $"_{sqlConnector.TableName()}-stream-*";
-                IEnumerable<RedisKey> keys = GetKeysByPattern(preFix, redisConnection);
-            
-                foreach(var key in keys)
+            await new HostBuilder()
+                .ConfigureAppConfiguration(config =>
                 {
-                    //Get the last entry
-                    StreamEntry[] results = db.StreamRange(key, maxId: "+", count:1, messageOrder:Order.Descending);
-                    NameValueEntry[] values = results[0].Values;
+                    config.AddAzureKeyVault(new Uri(Environment.GetEnvironmentVariable("AZURE_KEY_VAULT_ENDPOINT")!), 
+                        new ChainedTokenCredential(new AzureDeveloperCliCredential(), new DefaultAzureCredential()));
+                })
+                .ConfigureServices(async (context, services) => {
+                    var sqlConnectionString = context.Configuration[Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTION_STRING_KEY")];
+                    var redisConnectionString = context.Configuration[Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING_KEY")];
+                    if (string.IsNullOrEmpty(sqlConnectionString))
+                    {
+                        log.LogInformation("The SQL connection string is empty");
+                        throw new NullReferenceException(nameof(sqlConnectionString));
+                    }
 
-                    sqlConnector.PrepereQueries(values, key);
-                    await sqlConnector.WriteData(values, key);
-                }
-            }
-            catch(Exception ex)
-            {
-                log.LogInformation(ex.Message);
-            }
+                    if(string.IsNullOrEmpty(redisConnectionString))
+                    {
+                        log.LogInformation("The Redis connection string is empty");
+                        throw new NullReferenceException(nameof(redisConnectionString));
+                    }
+               
+                    try
+                    {
+                        IConnectionMultiplexer redisConnection = ConnectionMultiplexer.Connect(redisConnectionString);
 
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-        }
+                        IDatabase db = redisConnection.GetDatabase();
 
-        private static string GetAzureSqlConnectionString(string name, ILogger log)
-        { 
-            log.LogInformation($"Getting information from ConnectionStrings:{name}");
-            string conStr = Environment.GetEnvironmentVariable($"ConnectionStrings:{name}");
-            log.LogInformation($"The conStr value is:{conStr}");
+                        var sqlConnector = new SqlConnector(new SqlConnection(sqlConnectionString), "company", "symbol", log, db);
 
-            if (string.IsNullOrEmpty(conStr) && name == "SQLConnectionString") // Azure Functions App Service naming convention
-            {
-                log.LogInformation($"Getting information from SQLAZURECONNSTR_{name}");
-                conStr = Environment.GetEnvironmentVariable($"SQLAZURECONNSTR_{name}");
-                log.LogInformation($"The conStr value is:{conStr}");
-            }
-            return conStr;
-        }
+                        //TODO: Read from stream, depending on the type insert or update
+                        var preFix = $"_{sqlConnector.TableName()}-stream-*";
+                        IEnumerable<RedisKey> keys = GetKeysByPattern(preFix, redisConnection);
+            
+                        foreach(var key in keys)
+                        {
+                            //Get the last entry
+                            StreamEntry[] results = db.StreamRange(key, maxId: "+", count:1, messageOrder:Order.Descending);
+                            NameValueEntry[] values = results[0].Values;
 
-        private static string GetRedisConnectionstring(string name, ILogger log)
-        {
-            log.LogInformation($"Getting information from ConnectionStrings:{name}");
-            string conStr = Environment.GetEnvironmentVariable($"ConnectionStrings:{name}");
-            log.LogInformation($"The conStr value is:{conStr}");
+                            sqlConnector.PrepereQueries(values, key);
+                            await sqlConnector.WriteData(values, key);
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        log.LogInformation(ex.Message);
+                    }
 
-            if (string.IsNullOrEmpty(conStr) && name == "RedisConnectionString") // Azure Functions App Service naming convention
-            {
-                  log.LogInformation($"Getting information from REDISCONNSTR_{name}");
-                  conStr = Environment.GetEnvironmentVariable($"REDISCONNSTR_{name}");
-                  log.LogInformation($"The conStr value is:{conStr}");
-            }
-                
-            return conStr;
+                    log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+
+                })
+                .Build()
+                .RunAsync();
         }
 
         private static IEnumerable<RedisKey> GetKeysByPattern(string pattern, IConnectionMultiplexer redisConnection)

@@ -1,5 +1,8 @@
+using Azure.Identity;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 
 namespace BasicRedisLeaderboardDemoDotNetCore
@@ -8,7 +11,13 @@ namespace BasicRedisLeaderboardDemoDotNetCore
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            CreateHostBuilder(args)
+            .ConfigureAppConfiguration(configuration => {
+                configuration.AddAzureKeyVault(new Uri(Environment.GetEnvironmentVariable("AZURE_KEY_VAULT_ENDPOINT")!), 
+                    new ChainedTokenCredential(new AzureDeveloperCliCredential(), new DefaultAzureCredential()));
+            })
+            .Build()
+            .Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)
