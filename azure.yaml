@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+name: azure-sql-db-redis
+metadata:
+  template: azure-sql-db-redis@0.0.1-beta
+services:
+    web:
+        project: ./
+        docker:
+            path: ./Dockerfile
+        language: csharp
+        host: containerapp
+    reader:
+        project: ./ReaderFunction
+        language: csharp
+        host: function
+    sweeper:
+        project: ./SQLSweeperFunction
+        language: csharp
+        host: function
